@@ -17,8 +17,8 @@ import java.util.Map;
 @Slf4j
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
-    //private final int DESCRIPTION_MAX_LENGTH = 200;
-    private final LocalDate THE_BIRTHDAY_OF_CINEMA = LocalDate.of(1895, 12, 28);
+    //private static final int DESCRIPTION-MAX-LENGTH = 200;
+    private static final LocalDate THE_BIRTHDAY_OF_CINEMA = LocalDate.of(1895, 12, 28);
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -84,7 +84,7 @@ public class FilmController {
 
             if (film.getDescription() != null && film.getDescription().length() > DESCRIPTION_MAX_LENGTH) {
                 log.warn("Превышена длина описания ({} > {}). Фильм: {}",
-                        film.getDescription().length(), DESCRIPTION_MAX_LENGTH, film);
+                        film.getDescription().length(), DESCRIPTION-MAX-LENGTH, film);
                 throw new ValidationException("Максимальная длина описания — 200 символов");
             }
 
