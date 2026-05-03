@@ -25,8 +25,6 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        //validateUser(user);
-
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -43,21 +41,17 @@ public class UserController {
             log.warn("Id должен быть указан");
             throw new ValidationException("Id должен быть указан");
         }
+
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
-            /*
-            if (users.values().stream().anyMatch(u -> u.getEmail().equals(newUser.getEmail()))) {
-                log.warn("Имейл {} уже используется", newUser.getEmail());
-                throw new ValidationException("Имейл " + newUser.getEmail() + "уже используется");
-            }
-            */
+
             if (newUser.getEmail() != null) {
                 oldUser.setEmail(newUser.getEmail());
             }
             if (newUser.getLogin() != null) {
                 oldUser.setLogin(newUser.getLogin());
             }
-            if (newUser.getName() != null) {
+            if (newUser.getName() != null ) {
                 oldUser.setName(newUser.getName());
             }
             if (newUser.getBirthday() != null) {
@@ -71,32 +65,6 @@ public class UserController {
         throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
     }
 
-    /*
-        private void validateUser(User user) {
-            if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-                log.warn("Попытка регистрации с некорректным email: {}", user.getEmail());
-                throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-            }
-
-            if (users.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()))) {
-                log.warn("Попытка использовать существующий email: {}", user.getEmail());
-                throw new ValidationException("Этот имейл уже используется");
-            }
-
-            if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-                log.warn("Логин не может быть пустым и содержать пробелы");
-                throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-            }
-
-            if (user.getBirthday() == null) {
-                log.warn("Дата рождения не может быть пустой");
-                throw new ValidationException("Дата рождения не может быть пустой");
-            } else if (user.getBirthday().isAfter(LocalDate.now())) {
-                log.warn("Дата рождения не может быть в будущем");
-                throw new ValidationException("Дата рождения не может быть в будущем");
-            }
-        }
-    */
     private long getNextId() {
         long currentMaxId = users.keySet()
                 .stream()
