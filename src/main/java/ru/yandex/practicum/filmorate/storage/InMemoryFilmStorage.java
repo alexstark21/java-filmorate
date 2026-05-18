@@ -34,9 +34,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film update(Film newFilm) {
         log.debug("Попытка обновления фильма: {}", newFilm);
-        if (newFilm.getId() == null) {
-            throw new ValidationException("Id должен быть указан");
-        }
 
         if (films.containsKey(newFilm.getId())) {
 

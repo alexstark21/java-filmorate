@@ -37,10 +37,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User newUser) {
-        if (newUser.getId() == null) {
-            log.warn("Id должен быть указан");
-            throw new ValidationException("Id должен быть указан");
-        }
+        log.debug("Попытка обновления пользователя: {}", newUser);
 
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
