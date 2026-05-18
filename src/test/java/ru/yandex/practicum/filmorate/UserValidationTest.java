@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.validation.OnCreate;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -32,7 +33,7 @@ class UserValidationTest {
     @Test
     void shouldHaveErrorsWhenUserFieldsAreNull() {
         User user = new User();
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, OnCreate.class);
 
         assertFalse(violations.isEmpty());
         assertEquals(3, violations.size());
@@ -45,7 +46,7 @@ class UserValidationTest {
         user.setLogin("login");
         user.setBirthday(LocalDate.now().minusYears(20));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, OnCreate.class);
 
         boolean hasEmailError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("email"));
@@ -59,7 +60,7 @@ class UserValidationTest {
         user.setLogin("login");
         user.setBirthday(LocalDate.now().minusYears(20));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, OnCreate.class);
 
         boolean hasEmailError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("email"));
@@ -73,7 +74,7 @@ class UserValidationTest {
         user.setLogin("");
         user.setBirthday(LocalDate.now().minusYears(20));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, OnCreate.class);
 
         boolean hasLoginError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("login"));
@@ -88,7 +89,7 @@ class UserValidationTest {
         user.setLogin("login with spaces");
         user.setBirthday(LocalDate.now().minusYears(20));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, OnCreate.class);
 
         boolean hasLoginError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("login"));
@@ -115,7 +116,7 @@ class UserValidationTest {
         user.setLogin("login");
         user.setBirthday(LocalDate.now());
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, OnCreate.class);
         assertTrue(violations.isEmpty());
     }
 
@@ -126,7 +127,7 @@ class UserValidationTest {
         user.setLogin("login");
         user.setBirthday(LocalDate.now().plusDays(1));
 
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        Set<ConstraintViolation<User>> violations = validator.validate(user, OnCreate.class);
         boolean hasBirthdayError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("birthday"));
         assertTrue(hasBirthdayError);

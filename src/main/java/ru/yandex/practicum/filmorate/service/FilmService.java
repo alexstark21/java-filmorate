@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -17,19 +16,19 @@ import java.util.stream.Collectors;
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final UserService userService;
 
     public void addLike(Long filmId, Long userId) {
-        userStorage.findById(userId);
-        Film film = filmStorage.findById(filmId);
+        userService.findById(userId);
+        Film film = findById(filmId);
 
         film.getLikes().add(userId);
         log.info("Пользователь с id={} поставил лайк фильму с id={}", userId, filmId);
     }
 
     public void deleteLike(Long filmId, Long userId) {
-        userStorage.findById(userId);
-        Film film = filmStorage.findById(filmId);
+        userService.findById(userId);
+        Film film = findById(filmId);
 
         if (!film.getLikes().contains(userId)) {
             throw new NotFoundException("Лайк от пользователя с id=" + userId + " не найден");
@@ -41,7 +40,7 @@ public class FilmService {
 
     public Collection<Film> getPopularFilms(int count) {
         log.info("Запрошено {} наиболее популярных фильмов", count);
-        return filmStorage.findAll().stream()
+        return findAll().stream()
                 .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
                 .limit(count)
                 .collect(Collectors.toList());
@@ -60,6 +59,6 @@ public class FilmService {
     }
 
     public Film findById(Long id) {
-        return filmStorage.findById(id);
+        return filmStorage.findById(id).orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
     }
 }

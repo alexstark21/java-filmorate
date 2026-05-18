@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Component
@@ -50,7 +51,7 @@ public class InMemoryUserStorage implements UserStorage {
             if (newUser.getLogin() != null) {
                 oldUser.setLogin(newUser.getLogin());
             }
-            if (newUser.getName() != null) {
+            if (newUser.getName() != null && !newUser.getName().isBlank()) {
                 oldUser.setName(newUser.getName());
             }
             if (newUser.getBirthday() != null) {
@@ -74,11 +75,8 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User findById(Long id) {
-        if (!users.containsKey(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
-        }
-        return users.get(id);
+    public Optional<User> findById(Long id) {
+        return Optional.ofNullable(users.get(id));
     }
 
     private long getNextId() {
