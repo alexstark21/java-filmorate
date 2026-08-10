@@ -7,6 +7,7 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.validation.OnCreate;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -26,7 +27,7 @@ class FilmValidationTest {
     @Test
     void shouldHaveErrorsWhenFilmFieldsAreNull() {
         Film film = new Film();
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
 
         assertFalse(violations.isEmpty());
         System.out.println(violations);
@@ -40,7 +41,7 @@ class FilmValidationTest {
         film.setReleaseDate(LocalDate.now());
         film.setDuration(100);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
 
         boolean hasNameError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("name"));
@@ -56,7 +57,7 @@ class FilmValidationTest {
         film.setReleaseDate(LocalDate.now());
         film.setDuration(100);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
         assertTrue(violations.isEmpty());
     }
 
@@ -68,7 +69,7 @@ class FilmValidationTest {
         film.setReleaseDate(LocalDate.now());
         film.setDuration(100);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
 
         boolean hasDescriptionError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("description"));
@@ -83,7 +84,7 @@ class FilmValidationTest {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         film.setDuration(100);
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
 
         boolean hasReleaseDateError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("releaseDate"));
@@ -98,7 +99,7 @@ class FilmValidationTest {
         film.setDuration(-1);
         film.setReleaseDate(LocalDate.now());
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
 
         boolean hasDurationError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("duration"));
@@ -113,7 +114,7 @@ class FilmValidationTest {
         film.setDuration(0);
         film.setReleaseDate(LocalDate.now());
 
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
 
         boolean hasDurationError = violations.stream()
                 .anyMatch(v -> v.getPropertyPath().toString().equals("duration"));
