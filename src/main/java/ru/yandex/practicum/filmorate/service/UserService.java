@@ -1,67 +1,47 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class UserService {
-
     private final UserStorage userStorage;
 
-    public void addFriend(Long userId, Long friendId) {
-        User user = findById(userId);
-        User friend = findById(friendId);
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
-        log.info("Пользователи с id={} и id={} теперь друзья", userId, friendId);
+    public void addFriend(Long userId, Long friendId) {
+        findById(userId);
+        findById(friendId);
+        userStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(Long userId, Long friendId) {
-        User user = findById(userId);
-        User friend = findById(friendId);
-
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
-        log.info("Пользователи с id={} и id={} удалены из друзей друг у друга", userId, friendId);
+        findById(userId);
+        findById(friendId);
+        userStorage.deleteFriend(userId, friendId);
     }
 
     public Collection<User> getFriends(Long userId) {
-        User user = findById(userId);
+        findById(userId);
         log.info("Запрошен список друзей пользователя с id={}", userId);
-        return user.getFriends().stream()
-                .map(this::findById)
-                .collect(Collectors.toList());
+        return userStorage.getFriends(userId);
     }
 
     public Collection<User> getCommonFriends(Long userId, Long otherId) {
-        User user = findById(userId);
-        User otherUser = findById(otherId);
-
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherFriends = otherUser.getFriends();
-
-        if (userFriends == null || otherFriends == null) {
-            log.info("Общих друзей у пользователей с id={} и id={} нет", userId, otherId);
-            return Collections.emptyList();
-        }
-
+        findById(userId);
+        findById(otherId);
         log.info("Запрошен список общих друзей пользователей с id={} и id={}", userId, otherId);
-        return userFriends.stream()
-                .filter(otherFriends::contains)
-                .map(this::findById)
-                .collect(Collectors.toList());
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     public Collection<User> findAll() {

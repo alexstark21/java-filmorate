@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.validation.OnUpdate;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
@@ -32,4 +33,9 @@ public class Film {
     private long duration;
 
     private final Set<Long> likes = new HashSet<>();
+
+    private Set<Genre> genres = new LinkedHashSet<>();
+
+    @NotNull(groups = OnCreate.class, message = "Рейтинг MPA должен быть указан")
+    private Mpa mpa;
 }

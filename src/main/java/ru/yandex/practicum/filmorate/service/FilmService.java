@@ -1,49 +1,37 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class FilmService {
-
     private final FilmStorage filmStorage;
-    private final UserService userService;
+
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
+    }
 
     public void addLike(Long filmId, Long userId) {
-        userService.findById(userId);
-        Film film = findById(filmId);
-
-        film.getLikes().add(userId);
-        log.info("Пользователь с id={} поставил лайк фильму с id={}", userId, filmId);
+        filmStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(Long filmId, Long userId) {
-        userService.findById(userId);
-        Film film = findById(filmId);
-
-        if (!film.getLikes().contains(userId)) {
-            throw new NotFoundException("Лайк от пользователя с id=" + userId + " не найден");
-        }
-
-        film.getLikes().remove(userId);
-        log.info("Пользователь с id={} удалил лайк у фильма с id={}", userId, filmId);
+        filmStorage.deleteLike(filmId, userId);
     }
 
     public Collection<Film> getPopularFilms(int count) {
-        log.info("Запрошено {} наиболее популярных фильмов", count);
-        return findAll().stream()
-                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
+        if (count <= 0) {
+            throw new ValidationException("Количество фильмов должно быть положительным");
+        }
+        return filmStorage.getPopularFilms(count);
     }
 
     public Collection<Film> findAll() {
