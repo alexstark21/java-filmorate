@@ -7,6 +7,7 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.validation.OnCreate;
 
 import java.time.LocalDate;
@@ -31,7 +32,7 @@ class FilmValidationTest {
 
         assertFalse(violations.isEmpty());
         System.out.println(violations);
-        assertEquals(3, violations.size());
+        assertEquals(4, violations.size());
     }
 
     @Test
@@ -56,6 +57,7 @@ class FilmValidationTest {
         film.setDescription("a".repeat(200));
         film.setReleaseDate(LocalDate.now());
         film.setDuration(100);
+        film.setMpa(new Mpa(1, "G"));
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film, OnCreate.class);
         assertTrue(violations.isEmpty());
