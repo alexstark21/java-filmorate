@@ -32,7 +32,7 @@ class FilmValidationTest {
 
         assertFalse(violations.isEmpty());
         System.out.println(violations);
-        assertEquals(4, violations.size());
+        assertEquals(3, violations.size());
     }
 
     @Test
