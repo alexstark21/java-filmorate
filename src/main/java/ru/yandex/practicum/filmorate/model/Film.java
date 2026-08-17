@@ -36,6 +36,5 @@ public class Film {
 
     private Set<Genre> genres = new LinkedHashSet<>();
 
-    @NotNull(groups = OnCreate.class, message = "Рейтинг MPA должен быть указан")
     private Mpa mpa;
 }

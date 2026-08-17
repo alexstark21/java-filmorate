@@ -81,7 +81,7 @@ public class FilmDbStorage implements FilmStorage {
         saveGenres(film);
 
         log.info("Фильм с id={} успешно обновлен в БД", film.getId());
-        return findById(film.getId()).orElse(film);
+        return film;
     }
 
     @Override
@@ -155,10 +155,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void validateMpaExists(Mpa mpa) {
-        if (mpa == null || mpa.getId() == null) {
-            throw new NotFoundException("Рейтинг MPA не указан");
-        }
-
         String sql = "SELECT COUNT(*) FROM mpa_ratings WHERE id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, mpa.getId());
 
@@ -171,12 +167,25 @@ public class FilmDbStorage implements FilmStorage {
         if (genres == null || genres.isEmpty()) {
             return;
         }
-        String sql = "SELECT COUNT(*) FROM genres WHERE id = ?";
-        for (Genre genre : genres) {
-            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, genre.getId());
-            if (count == null || count == 0) {
-                throw new NotFoundException("Жанр с id = " + genre.getId() + " не существует");
-            }
+        List<Integer> genreIds = genres.stream()
+                .map(Genre::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        if (genreIds.isEmpty()) {
+            return;
+        }
+
+        String placeholders = String.join(",", Collections.nCopies(genreIds.size(), "?"));
+        String sql = "SELECT COUNT(*) FROM genres WHERE id IN (" + placeholders + ")";
+
+        Object[] args = genreIds.toArray();
+
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, args);
+
+        if (count == null || count < genreIds.size()) {
+            throw new NotFoundException("Один или несколько указанных жанров не существуют");
         }
     }
 
