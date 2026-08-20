@@ -3,15 +3,14 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
-@Component
+@Component("inMemoryUserStorage")
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
@@ -27,7 +26,6 @@ public class InMemoryUserStorage implements UserStorage {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
         user.setId(getNextId());
         users.put(user.getId(), user);
         log.info("Создан пользователь: {}", user);
@@ -37,10 +35,8 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User update(User newUser) {
         log.debug("Попытка обновления пользователя: {}", newUser);
-
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
-
             if (newUser.getEmail() != null) {
                 oldUser.setEmail(newUser.getEmail());
             }
@@ -67,12 +63,62 @@ public class InMemoryUserStorage implements UserStorage {
             throw new NotFoundException("Пользователь с id = " + id + " не найден");
         }
         users.remove(id);
-        log.info("Удален пользователь с id={}", id);
+        log.info("Удален пользователь с id = {}", id);
     }
 
     @Override
     public Optional<User> findById(Long id) {
         return Optional.ofNullable(users.get(id));
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+        User user = findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        findById(friendId).orElseThrow(() -> new NotFoundException("Друг не найден"));
+
+        user.getFriends().put(friendId, FriendshipStatus.UNCONFIRMED);
+        log.info("Пользователь id = {} отправил запрос на дружбу пользователю id = {}", userId, friendId);
+    }
+
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
+        User user = findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        findById(friendId).orElseThrow(() -> new NotFoundException("Друг не найден"));
+
+        user.getFriends().remove(friendId);
+        log.info("Пользователь с id = {} удалил из подписок пользователя с id = {}", userId, friendId);
+    }
+
+    @Override
+    public Collection<User> getFriends(Long userId) {
+        User user = findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        log.info("Запрошен список друзей пользователя с id = {}", userId);
+
+        return user.getFriends().keySet().stream()
+                .map(users::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(Long userId, Long otherId) {
+        User user = findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        User otherUser = findById(otherId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+
+        Set<Long> userFriends = user.getFriends().keySet();
+        Set<Long> otherFriends = otherUser.getFriends().keySet();
+
+        if (userFriends.isEmpty() || otherFriends.isEmpty()) {
+            log.info("Общих друзей у пользователей с id = {} и id = {} нет", userId, otherId);
+            return Collections.emptyList();
+        }
+
+        log.info("Запрошен список общих друзей пользователей с id = {} и id = {}", userId, otherId);
+        return userFriends.stream()
+                .filter(otherFriends::contains)
+                .map(users::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private long getNextId() {
